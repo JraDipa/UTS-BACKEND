@@ -1,81 +1,76 @@
 <?php
-// Purchases.php
-require_once __DIR__ . '/../../config/database.php';
+require_once __DIR__. '/../../config/database.php';
 
 class Purchases {
+    // Properti private yang menyimpan koneksi database
     private $pdo;
 
-    public function __construct(PDO $pdo) {
-        $this->pdo = $pdo;
+    // Konstruktor yang menghubungkan ke database saat instance kelas dibuat
+    public function __construct() {
+        $this->pdo = connectToDatabase();
     }
 
+    // Mengambil semua rekaman dari tabel purchases
     public function getAllPurchases() {
+        // Menyiapkan query SELECT *
         $stmt = $this->pdo->query("SELECT * FROM purchases");
+
+        // Mengambil semua hasil sebagai array asosiatif
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    public function getPurchaseById($purchaseId) {
-        $stmt = $this->pdo->prepare("SELECT * FROM purchases WHERE purchase_id = purchaseId");
-        $stmt->execute([$purchaseId]);
+    // Mengambil rekaman tunggal dari tabel purchases berdasarkan purchase_id
+    public function getPurchaseById($id) {
+        // Menyiapkan query SELECT * dengan klausa WHERE yang memfilter oleh purchase_id
+        $stmt = $this->pdo->prepare("SELECT * FROM purchases WHERE purchase_id = :id");
+
+        // Menjalankan query dengan $id sebagai parameter
+        $stmt->execute(['id' => $id]);
+
+        // Mengambil hasil sebagai array asosiatif
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
-    public function addPurchase(
-        $supplier, $lastVisited, $returnStatus, $warranty, 
-        $purchaseDate, $returnPolicy, $feedback, $orderId) {
+    // Menambahkan rekaman baru ke tabel purchases
+    public function addPurchase($data) {
+        // Menyiapkan query INSERT INTO dengan placeholder untuk nilai kolom
         $stmt = $this->pdo->prepare("
-        INSERT INTO purchases (
-            supplier, last_visited, return_status, warranty, 
-            purchase_date, return_policy, feedback, order_id) 
-        VALUES (
-            :supplier, :lastVisited, :returnStatus, :warranty, 
-            :purchaseDate, :returnPolicy, :feedback, :orderId)"
-        );
-        $stmt->execute([
-            'suplier' => $supplier, 
-            'last_visited' => $lastVisited, 
-            'return_status' => $returnStatus, 
-            'warranty' => $warranty, 
-            'purchase_date' => $purchaseDate, 
-            'return_policy' => $returnPolicy, 
-            'feedback' => $feedback, 
-            'order_id' => $orderId
-        ]);
-        return $this->pdo->lastInsertId();
+            INSERT INTO purchases 
+            (supplier, last_visited, return_status, warranty, purchase_date, return_policy, feedback, order_id) 
+            VALUES 
+            (:supplier, :last_visited, :return_status, :warranty, :purchase_date, :return_policy, :feedback, :order_id)
+        ");
+
+        // Menjalankan query dengan array $data yang harus berisi nilai untuk kolom
+        $stmt->execute($data);
     }
 
-    public function updatePurchase(
-        $purchaseId, $supplier, $lastVisited, $returnStatus, 
-        $warranty, $purchaseDate, $returnPolicy, $feedback, $orderId) {
+    // Memperbarui rekaman yang ada di tabel purchases
+    public function updatePurchase($id, $data) {
+        // Menyiapkan query UPDATE dengan placeholder untuk nilai kolom dan klausa WHERE yang memfilter oleh purchase_id
         $stmt = $this->pdo->prepare("
-        UPDATE purchases SET 
-        supplier = :supplier, 
-        last_visited = :lastVisited, 
-        return_status = :returnStatus, 
-        warranty = :warranty, 
-        purchase_date = :purchaseDate, 
-        return_policy = :returnPolicy, 
-        feedback = :feedback, 
-        order_id = :orderId 
-        WHERE purchase_id = :purchaseId"
-        );
-        $stmt->execute([
-            'supplier' =>$supplier, 
-            'last_visited' => $lastVisited, 
-            'return_status' => $returnStatus, 
-            'warranty' => $warranty, 
-            'purchase_date' => $purchaseDate, 
-            'return_policy' => $returnPolicy, 
-            'feedback' => $feedback, 
-            'order_id' => $orderId, 
-            'purchase_id' => $purchaseId
-        ]);
-        return $stmt->rowCount() > 0;
+            UPDATE purchases SET 
+            supplier = :supplier, 
+            last_visited = :last_visited, 
+            return_status = :return_status, 
+            warranty = :warranty, 
+            purchase_date = :purchase_date, 
+            return_policy = :return_policy, 
+            feedback = :feedback, 
+            order_id = :order_id 
+            WHERE purchase_id = :id
+        ");
+
+        // Menjalankan query dengan $id dan array $data yang harus berisi nilai yang diperbarui untuk kolom
+        $stmt->execute(array_merge(['id' => $id], $data));
     }
 
-    public function deletePurchase($purchaseId) {
-        $stmt = $this->pdo->prepare("DELETE FROM purchases WHERE purchase_id = :purchaseId");
-        $stmt->execute([$purchaseId]);
-        return $stmt->rowCount() > 0;
+    // Menghapus rekaman dari tabel purchases berdasarkan purchase_id
+    public function deletePurchase($id) {
+        // Menyiapkan query DELETE dengan klausa WHERE yang memfilter oleh purchase_id
+        $stmt = $this->pdo->prepare("DELETE FROM purchases WHERE purchase_id = :id");
+
+        // Menjalankan query dengan $id sebagai parameter
+        $stmt->execute(['id' => $id]);
     }
 }
