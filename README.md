@@ -3,7 +3,7 @@
 - Nama : Anak Agung Ngurah Bajra Dipa Narotama
 - NIM : 230010037
 
-### Project ini dirancang dengan struktur direktori yang terorganisir, terdiri dari tiga direktori utama yaitu config, public, dan src. Setiap direktori memiliki peran spesifik dalam arsitektur aplikasi:
+### Penjelasan
 
 ### 1. Direktori config
 
